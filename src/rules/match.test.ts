@@ -1,14 +1,87 @@
 import MatchRule from "./match"
 
-test('Find AAAA in AAAAT', () => {
-	const name = 'match|AAAA'
-	const reference = 'AAAAT'
-	const rule = new MatchRule({ name, errorLevel: 'warn' })
+describe(`Match Rule`, () => {
+	test(`Throw error if you pass an restriction enzyme don't exist on library`, () => {
+		const name = 'match|NonExistentEnzyme'
+		const reference = 'AAAAT'
+		const rule = new MatchRule({ name, errorLevel: 'warn' })
 
-	const fbs = rule.verify({ reference })
-	expect(fbs.length).toEqual(1)
+		expect(() => rule.verify({ reference })).toThrow()
+	})
 
-	const feedback = fbs[0]
-	expect(feedback.start).toBe(0)
-	expect(feedback.end).toBe(3)
+	test(`Find BsaI on the sequence reference`, () => {
+		const name = 'match|BsaI'
+		const enzymeSite = "GGTCTC"
+		const reference = `${enzymeSite}AAGCTAGTCA`
+		const level = 'warn'
+		const rule = new MatchRule({ name, errorLevel: level })
+
+		const fbs = rule.verify({ reference })
+		expect(fbs.length).toEqual(1)
+
+		const matchFound = fbs[0]
+		expect(matchFound).toBeDefined()
+		expect(matchFound.ruleName).toBe(name)
+		expect(matchFound.level).toBe(level)
+		expect(matchFound.start).toEqual(0)
+		expect(matchFound.end).toEqual(6)
+		expect(reference.substring(matchFound.start, matchFound.end)).toBe(enzymeSite)
+	})
+
+	test(`Find Eco31I, a isoschizomers of enzyme of BsaI`, () => {
+		const name = 'match|Eco31I'
+		const enzymeSite = "GGTCTC"
+		const reference = `${enzymeSite}AAGCTAGTCA`
+		const level = 'warn'
+		const rule = new MatchRule({ name, errorLevel: level })
+
+		const fbs = rule.verify({ reference })
+		expect(fbs.length).toEqual(1)
+
+		const matchFound = fbs[0]
+		expect(matchFound).toBeDefined()
+		expect(matchFound.ruleName).toBe(name)
+		expect(matchFound.level).toBe(level)
+		expect(matchFound.start).toEqual(0)
+		expect(matchFound.end).toEqual(6)
+		expect(reference.substring(matchFound.start, matchFound.end)).toBe(enzymeSite)
+	})
+
+	test(`Find BbsI on the sequence reference`, () => {
+		const name = 'match|BbsI'
+		const enzymeSite = "GAAGAC"
+		const reference = `GGTCTCA${enzymeSite}TCA`
+		const level = 'warn'
+		const rule = new MatchRule({ name, errorLevel: level })
+
+		const fbs = rule.verify({ reference })
+		expect(fbs.length).toEqual(1)
+
+		const matchFound = fbs[0]
+		expect(matchFound).toBeDefined()
+		expect(matchFound.ruleName).toBe(name)
+		expect(matchFound.level).toBe(level)
+		expect(matchFound.start).toEqual(7)
+		expect(matchFound.end).toEqual(13)
+		expect(reference.substring(matchFound.start, matchFound.end)).toBe(enzymeSite)
+	})
+
+	test(`Pass sequence as argument instead of relying on the enzyme library`, () => {
+		const name = 'match'
+		const enzymeSite = "GAAGAC"
+		const reference = `GGTCTCA${enzymeSite}TCA`
+		const level = 'warn'
+		const rule = new MatchRule({ name, errorLevel: level })
+
+		const fbs = rule.verify({ query: enzymeSite, reference })
+		expect(fbs.length).toEqual(1)
+
+		const matchFound = fbs[0]
+		expect(matchFound).toBeDefined()
+		expect(matchFound.ruleName).toBe(name)
+		expect(matchFound.level).toBe(level)
+		expect(matchFound.start).toEqual(7)
+		expect(matchFound.end).toEqual(13)
+		expect(reference.substring(matchFound.start, matchFound.end)).toBe(enzymeSite)
+	})
 })

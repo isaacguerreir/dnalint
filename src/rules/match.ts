@@ -1,26 +1,13 @@
 import { ErrorLevel } from "../configuration"
-import Rule, { Feedback } from "./rule"
+import library from "./restriction/dictionary"
+import Rule, { Feedback, RuleProps } from "./rule"
 
 type Seq = string
 
 
-// TODO: Improve this function using kmers tables
-function match(query: Seq, reference: Seq) {
-	let idxs: Array<number> = []
-	for (let match of reference.matchAll(new RegExp(query, 'g'))) {
-		idxs.push(match.index)
-	}
-	return idxs
-}
-
 interface Input {
 	query?: Seq
 	reference: Seq
-}
-
-interface MatchRuleProps {
-	name: string
-	errorLevel?: ErrorLevel
 }
 
 const DEFAULT_ERROR_LEVEL = "warn"
@@ -29,30 +16,44 @@ class MatchRule implements Rule {
 	name: string
 	level: ErrorLevel
 
-	constructor({ name, errorLevel }: MatchRuleProps) {
+	constructor({ name, errorLevel }: RuleProps) {
 		this.name = name
 		this.level = errorLevel ? errorLevel : DEFAULT_ERROR_LEVEL
 	}
 
-	getQueryById() {
+	private getQueryById() {
 		const identifierParts = this.name.split('|')
 		// TODO: Improve throw because I don't have time now
 		if (identifierParts.length != 2 || identifierParts[1].length == 0) throw 'Something horrible not having a second argument'
-		// TODO: Parse identifierParts[1] from enzyme names to query sequences
-		return identifierParts[1]
+
+		const enzyme = library[identifierParts[1]]
+		// TODO: Improve throw because I don't have time now
+		if (!enzyme) throw 'Enzyme not found!'
+
+		return enzyme.site
 	}
 
 	verify({ query, reference }: Input) {
 		if (!query) {
 			query = this.getQueryById()
 		}
-		return match(query, reference)
+		return this.match(query, reference)
 			.map((idx) => new Feedback({
 				ruleName: this.name,
 				level: this.level,
 				start: idx,
-				end: idx + query.length - 1
+				end: idx + query.length
 			}))
+	}
+
+	// TODO: Improve this function using kmers tables
+	// TODO: Search on both strands
+	private match(query: Seq, reference: Seq) {
+		let idxs: Array<number> = []
+		for (let match of reference.matchAll(new RegExp(query, 'g'))) {
+			idxs.push(match.index)
+		}
+		return idxs
 	}
 
 }

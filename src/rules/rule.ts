@@ -7,6 +7,7 @@ interface FeedbackProps {
 	end: number
 }
 
+// TODO: Feedback need to have a field for description
 export class Feedback {
 	ruleName: string
 	level: ErrorLevel
@@ -19,6 +20,11 @@ export class Feedback {
 		this.start = start
 		this.end = end
 	}
+}
+
+export interface RuleProps {
+	name: string
+	errorLevel?: ErrorLevel
 }
 
 export default interface Rule {
