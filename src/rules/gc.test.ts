@@ -1,10 +1,11 @@
+import Seq from "../seq"
 import GCRule from "./gc"
 
 describe(`GC Rule`, () => {
 	test(`Get feedbacks of two windows outside of the GC threshold inside sequence`, () => {
 		const name = "gc"
 		const errorLevel = "warn"
-		const reference = "CGCGCATATATAA"
+		const reference = new Seq("CGCGCATATATAA")
 
 		const expectedWindow = "GCATATATAA"
 
@@ -18,13 +19,13 @@ describe(`GC Rule`, () => {
 		expect(gcFb.level).toBe(errorLevel)
 		expect(gcFb.start).toEqual(3)
 		expect(gcFb.end).toEqual(13)
-		expect(reference.substring(gcFb.start, gcFb.end)).toBe(expectedWindow)
+		expect(reference.basepairs.substring(gcFb.start, gcFb.end)).toBe(expectedWindow)
 	})
 
 	test(`Use identifier to find GC content feedbacks`, () => {
 		const name = "gc|20-70-10"
 		const errorLevel = "warn"
-		const reference = "CGCGCATATATAAAA"
+		const reference = new Seq("CGCGCATATATAAAA")
 
 		let expectedWindow = "CATATATAAA"
 
@@ -38,7 +39,7 @@ describe(`GC Rule`, () => {
 		expect(gcFb.level).toBe(errorLevel)
 		expect(gcFb.start).toEqual(4)
 		expect(gcFb.end).toEqual(14)
-		expect(reference.substring(gcFb.start, gcFb.end)).toBe(expectedWindow)
+		expect(reference.basepairs.substring(gcFb.start, gcFb.end)).toBe(expectedWindow)
 
 		expectedWindow = "ATATATAAAA"
 		gcFb = fbs[1]
@@ -46,6 +47,6 @@ describe(`GC Rule`, () => {
 		expect(gcFb.level).toBe(errorLevel)
 		expect(gcFb.start).toEqual(5)
 		expect(gcFb.end).toEqual(15)
-		expect(reference.substring(gcFb.start, gcFb.end)).toBe(expectedWindow)
+		expect(reference.basepairs.substring(gcFb.start, gcFb.end)).toBe(expectedWindow)
 	})
 })

@@ -1,16 +1,12 @@
-import { ErrorLevel } from "../configuration"
+import Rule, { DEFAULT_ERROR_LEVEL, Feedback, RuleProps } from "./rule"
 import library from "./restriction/dictionary"
-import Rule, { Feedback, RuleProps } from "./rule"
-
-type Seq = string
-
+import { ErrorLevel } from "../configuration"
+import Seq from "../seq"
 
 interface Input {
 	query?: Seq
 	reference: Seq
 }
-
-const DEFAULT_ERROR_LEVEL = "warn"
 
 class MatchRule implements Rule {
 	name: string
@@ -30,19 +26,20 @@ class MatchRule implements Rule {
 		// TODO: Improve throw because I don't have time now
 		if (!enzyme) throw 'Enzyme not found!'
 
-		return enzyme.site
+		return new Seq(enzyme.site)
 	}
 
 	verify({ query, reference }: Input) {
 		if (!query) {
 			query = this.getQueryById()
 		}
+		const querySize = query.size
 		return this.match(query, reference)
 			.map((idx) => new Feedback({
 				ruleName: this.name,
 				level: this.level,
 				start: idx,
-				end: idx + query.length
+				end: idx + querySize
 			}))
 	}
 
@@ -50,12 +47,11 @@ class MatchRule implements Rule {
 	// TODO: Search on both strands
 	private match(query: Seq, reference: Seq) {
 		let idxs: Array<number> = []
-		for (let match of reference.matchAll(new RegExp(query, 'g'))) {
-			idxs.push(match.index)
+		for (let match of reference.basepairs.matchAll(new RegExp(query.basepairs, 'g'))) {
+			if (typeof match.index != 'undefined') idxs.push(match.index)
 		}
 		return idxs
 	}
-
 }
 
 export default MatchRule

@@ -1,3 +1,4 @@
+import Seq from "../seq"
 import HomopolymerRule from "./homopolymer"
 
 describe(`Homopolymer Rule`, () => {
@@ -6,7 +7,7 @@ describe(`Homopolymer Rule`, () => {
 		const errorLevel = "warn"
 		const polymer = "T"
 		const homopolymer = polymer.repeat(10)
-		const reference = `${homopolymer}TGCTATAGCTAGAGC`
+		const reference = new Seq(`${homopolymer}TGCTATAGCTAGAGC`)
 		const rule = new HomopolymerRule({ name, errorLevel })
 
 		const fbs = rule.verify({ polymer, size: 10, reference })
@@ -17,7 +18,7 @@ describe(`Homopolymer Rule`, () => {
 		expect(gcFb.level).toBe(errorLevel)
 		expect(gcFb.start).toEqual(0)
 		expect(gcFb.end).toEqual(10)
-		expect(reference.substring(gcFb.start, gcFb.end)).toBe(homopolymer)
+		expect(reference.basepairs.substring(gcFb.start, gcFb.end)).toBe(homopolymer)
 	})
 
 	test(`Use identifier to find homopolymer feedbacks`, () => {
@@ -25,7 +26,7 @@ describe(`Homopolymer Rule`, () => {
 		const errorLevel = "warn"
 		const polymer = "G"
 		const homopolymer = polymer.repeat(12)
-		const reference = `${homopolymer}TGCTATAGCTAGAGC`
+		const reference = new Seq(`${homopolymer}TGCTATAGCTAGAGC`)
 		const rule = new HomopolymerRule({ name, errorLevel })
 
 		const fbs = rule.verify({ reference })
@@ -36,6 +37,6 @@ describe(`Homopolymer Rule`, () => {
 		expect(gcFb.level).toBe(errorLevel)
 		expect(gcFb.start).toEqual(0)
 		expect(gcFb.end).toEqual(12)
-		expect(reference.substring(gcFb.start, gcFb.end)).toBe(homopolymer)
+		expect(reference.basepairs.substring(gcFb.start, gcFb.end)).toBe(homopolymer)
 	})
 })

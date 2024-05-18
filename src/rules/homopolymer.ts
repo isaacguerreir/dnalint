@@ -1,7 +1,6 @@
 import MatchRule from "./match"
 import { RuleProps } from "./rule"
-
-type Seq = string
+import Seq from "../seq"
 
 type Base = 'A' | 'T' | 'C' | 'G'
 
@@ -53,7 +52,7 @@ class HomopolymerRule extends MatchRule {
 		if (!polymer) {
 			polymer = params.polymer
 		}
-		const query = polymer.repeat(size)
+		const query = new Seq(polymer.repeat(size))
 		return super.verify({ query, reference })
 	}
 }

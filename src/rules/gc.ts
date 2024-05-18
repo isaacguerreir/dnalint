@@ -1,7 +1,6 @@
 import { ErrorLevel } from "../configuration"
-import Rule, { Feedback, RuleProps } from "./rule"
-
-type Seq = string
+import Seq from "../seq"
+import Rule, { DEFAULT_ERROR_LEVEL, Feedback, RuleProps } from "./rule"
 
 /*
  *  GC rules have some common parameters:
@@ -18,6 +17,7 @@ interface Input {
 	reference: Seq
 	components?: Array<string>
 }
+
 interface Thresholds {
 	min: number
 	max: number
@@ -30,7 +30,6 @@ const DEFAULT = {
 	MAX: 70,
 	WINDOW: 50
 }
-const DEFAULT_ERROR_LEVEL = "warn"
 
 // TODO: Maybe would be interesting to make reference sequence a field instead of passing as argument
 class GCRule implements Rule {
@@ -60,7 +59,7 @@ class GCRule implements Rule {
 			max: DEFAULT.MAX,
 			window: DEFAULT.WINDOW,
 			components: []
-		}
+		} as Thresholds
 
 		// TODO: Improve throw because I don't have time now
 		if (identifierParts.length != 2 || identifierParts[1].length == 0) throw 'Something horrible not having a second argument'
@@ -71,7 +70,7 @@ class GCRule implements Rule {
 		const window = Number(params[2]) > 0 ? Number(params[2]) : DEFAULT.WINDOW
 		const components = params[3] ? params[3].split(",") : []
 
-		return { min, max, window, components }
+		return { min, max, window, components } as Thresholds
 	}
 
 	verify({ min, max, window, reference, components }: Input) {
@@ -89,12 +88,13 @@ class GCRule implements Rule {
 		if (!components) {
 			components = threshold.components
 		}
+		const windowSize = window
 		return this.match(min, max, window, reference, components)
 			.map((idx) => new Feedback({
 				ruleName: this.name,
 				level: this.level,
 				start: idx,
-				end: idx + window
+				end: idx + windowSize
 			}))
 	}
 
@@ -102,8 +102,8 @@ class GCRule implements Rule {
 		const idxs: Array<number> = []
 
 		// TODO: Filter reference by components
-		for (let i = 0; i <= reference.length - window; i++) {
-			let gcNumber = reference
+		for (let i = 0; i <= reference.size - window; i++) {
+			let gcNumber = reference.basepairs
 				.substring(i, i + window)
 				.split("")
 				.map((s: string) => ["G", "C"].includes(s) ? 1 : 0)

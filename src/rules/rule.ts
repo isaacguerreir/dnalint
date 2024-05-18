@@ -1,5 +1,7 @@
 import { ErrorLevel } from "../configuration"
 
+export const DEFAULT_ERROR_LEVEL = "warn"
+
 interface FeedbackProps {
 	ruleName: string
 	level: ErrorLevel

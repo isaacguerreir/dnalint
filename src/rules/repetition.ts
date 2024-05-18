@@ -1,5 +1,5 @@
 import { ErrorLevel } from "../configuration"
-import Rule, { Feedback, RuleProps } from "./rule"
+import Rule, { DEFAULT_ERROR_LEVEL, Feedback, RuleProps } from "./rule"
 
 type Seq = string
 
@@ -14,7 +14,6 @@ interface KmerTable {
 }
 
 const DEFAULT_WINDOW = 15
-const DEFAULT_ERROR_LEVEL = "warn"
 
 // TODO: Maybe would be interesting to make reference sequence a field instead of passing as argument and also window
 class RepetitionRule implements Rule {
@@ -43,12 +42,13 @@ class RepetitionRule implements Rule {
 		if (!window) {
 			window = this.getWindowById()
 		}
+		const windowSize = window
 		return this.match(window, reference)
 			.map((idx) => new Feedback({
 				ruleName: this.name,
 				level: this.level,
 				start: idx,
-				end: idx + window
+				end: idx + windowSize
 			}))
 	}
 
